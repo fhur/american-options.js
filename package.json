@@ -1,8 +1,8 @@
 {
-  "name": "options.js",
-  "version": "1.0.0",
+  "name": "american-options.js",
+  "version": "0.0.1",
   "license": "MIT",
-  "main": "index.js",
+  "main": "build/index.js",
   "devDependencies": {
     "@types/jest": "^27.0.3",
     "jest": "^27.4.4",

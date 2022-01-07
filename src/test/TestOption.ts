@@ -16,4 +16,5 @@ export interface TestOption {
   ul: string;
   ulAsk: number;
   ulBid: number;
+  tradeVolume: number;
 }

@@ -21,7 +21,7 @@ export const pricingMethodAverageOfTwoBinomials = ({
     interestRate,
   });
   return {
-    name: `average of two binomials with different periods (periods=${periods})`,
+    name: `avg 2 binomials (p=${periods}, i=${interestRate})`,
     price: (option) => {
       const price1 = pricingFunction1.price(option);
       const price2 = pricingFunction2.price(option);

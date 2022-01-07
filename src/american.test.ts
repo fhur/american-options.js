@@ -45,12 +45,20 @@ describe("american", () => {
 
   describe(`pricing methods`, () => {
     const pricingMethods = [
-      pricingMethodBinomial({}),
-      pricingMethodAverageOfTwoBinomials({}),
+      pricingMethodBinomial({ periods: 11 }),
+      pricingMethodAverageOfTwoBinomials({ periods: 12 }),
+      pricingMethodAverageOfTwoBinomials({ periods: 12, interestRate: 0.015 }),
+      pricingMethodAverageOfTwoBinomials({ periods: 12, interestRate: 0.01 }),
     ];
 
     const results: Array<
-      TestOption & { pricingMethod: string; predictedPrice: number }
+      TestOption & {
+        pricingMethod: string;
+        predictedPrice: number;
+        absError: number;
+        relError: number;
+        relStrike: number;
+      }
     > = [];
 
     const optionsSubset = options.slice(0, 1000);
@@ -59,10 +67,17 @@ describe("american", () => {
       test(pricingMethod.name, () => {
         for (const option of optionsSubset) {
           const price = pricingMethod.price(option);
+          const midpoint = (option.bid + option.ask) / 2;
           results.push({
             ...option,
             predictedPrice: price.predictedPrice,
             pricingMethod: pricingMethod.name,
+            absError: price.predictedPrice - midpoint,
+            relError: Math.abs(
+              (2 * (price.predictedPrice - midpoint)) /
+                (Math.abs(midpoint) + Math.abs(price.predictedPrice))
+            ),
+            relStrike: option.strike / option.ulAsk - 1,
           });
         }
       });

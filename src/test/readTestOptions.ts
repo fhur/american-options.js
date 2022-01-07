@@ -84,6 +84,7 @@ function loadUnderlyingOptionsEODCalc() {
     bid_1545: parseFloat,
     ask_1545: parseFloat,
     implied_volatility_1545: parseFloat,
+    trade_volume: parseFloat,
   };
   const rawLines: {
     underlying_symbol: string;
@@ -99,6 +100,7 @@ function loadUnderlyingOptionsEODCalc() {
     open: number;
     high: number;
     implied_volatility_1545: number;
+    trade_volume: number;
   }[] = dirs.flatMap((file) => loadCsv(`./resources/${file}`, columns));
 
   return rawLines.map(
@@ -117,6 +119,7 @@ function loadUnderlyingOptionsEODCalc() {
         open,
         high,
         implied_volatility_1545: iv,
+        trade_volume: tradeVolume,
       },
       i
     ) => {
@@ -134,6 +137,7 @@ function loadUnderlyingOptionsEODCalc() {
         high,
         ask,
         iv,
+        tradeVolume,
         days: Math.floor(yearsDiff(quoteDate, expiration) * 365),
       };
     }
@@ -150,7 +154,8 @@ export function readTestOptions(): TestOption[] {
       o.iv < 1.5 &&
       yearsDiff(o.quoteDate, o.expiration) > 5 / 365 &&
       o.delta < 0.95 &&
-      o.delta > -0.95
+      o.delta > -0.95 &&
+      o.tradeVolume > 50
   );
 
   return options;

@@ -13,39 +13,118 @@
     <script src="https://cdn.jsdelivr.net/npm/vega@5.21.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.2.0"></script>
     <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.20.2"></script>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      .visualization {
+        width: 800px;
+        padding: 12px;
+      }
+      .visualization + .visualization {
+        border-top: 1px solid #fafafa;
+      }
+    </style>
   </head>
   <body>
-    <div id="vis"></div>
+    <div style="display: flex; flex-direction: column; gap: 32px">
+      <div
+        id="vis-max-error-as-function-of-rel-strike"
+        class="visualization"
+      ></div>
+      <div
+        id="vis-max-error-as-function-of-expiration"
+        class="visualization"
+      ></div>
+      <div id="vis2" class="visualization"></div>
+    </div>
 
     <script>
-      async function run() {
+      async function insertVega(nodeId, spec) {
         const response = await fetch("results.json");
         const results = await response.json();
 
         // Assign the specification to a local variable vlSpec.
         const vlSpec = {
-          $schema: "https://vega.github.io/schema/vega-lite/v5.json",
           data: {
             values: results,
           },
-          mark: "bar",
-          encoding: {
-            y: { field: "a", type: "nominal" },
-            x: {
-              aggregate: "average",
-              field: "b",
-              type: "quantitative",
-              axis: {
-                title: "Average of b",
-              },
-            },
-          },
+          ...spec,
         };
 
         // Embed the visualization in the container with id `vis`
-        vegaEmbed("#vis", vlSpec);
+        vegaEmbed(nodeId, vlSpec, { renderer: "svg", actions: null });
       }
-      run();
+
+      insertVega("#vis-max-error-as-function-of-rel-strike", {
+        $schema: "https://vega.github.io/schema/vega-lite/v5.json",
+        title: "error as a function of relStrike, split by put / call",
+        mark: { type: "bar", tooltip: true },
+        encoding: {
+          row: { field: "type" },
+          x: {
+            field: "relStrike",
+            bin: { step: 0.05 },
+          },
+          y: { aggregate: "max", field: "absError" },
+          xOffset: { field: "pricingMethod" },
+          color: { field: "pricingMethod" },
+        },
+        config: {
+          legend: { orient: "bottom" },
+          padding: 24,
+        },
+        width: 800,
+        height: 200,
+      });
+
+      insertVega("#vis-max-error-as-function-of-expiration", {
+        $schema: "https://vega.github.io/schema/vega-lite/v5.json",
+        title: "error as a function of days, split by put / call",
+        mark: { type: "bar", tooltip: true },
+        encoding: {
+          row: { field: "type" },
+          x: {
+            field: "days",
+            scale: { type: "sqrt" },
+            bin: { step: 10 },
+          },
+          y: { aggregate: "max", field: "absError" },
+          xOffset: { field: "pricingMethod" },
+          color: { field: "pricingMethod" },
+        },
+        config: {
+          legend: { orient: "bottom" },
+          padding: 24,
+        },
+        width: 800,
+        height: 200,
+      });
+
+      insertVega("#vis2", {
+        $schema: "https://vega.github.io/schema/vega-lite/v5.json",
+
+        title:
+          "Maximum relError as a function of trade volume: more volume, less errors",
+        mark: { type: "bar", tooltip: true },
+        encoding: {
+          x: {
+            field: "tradeVolume",
+            bin: { step: 1000 },
+            scale: { type: "sqrt" },
+          },
+          y: { aggregate: "max", field: "relError" },
+          color: { field: "pricingMethod" },
+        },
+        config: {
+          legend: { orient: "bottom" },
+          padding: 24,
+        },
+        width: 800,
+        height: 200,
+      });
     </script>
   </body>
 </html>
